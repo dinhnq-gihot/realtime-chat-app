@@ -4,9 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+chatapp-services.workspace = true
+chatapp-logger.workspace = true
+
 tokio.workspace = true
 actix-web.workspace = true
 env_logger.workspace = true
 log.workspace = true
 serde.workspace = true
 serde_yaml.workspace = true
+tracing-actix-web.workspace = true
+tracing.workspace = true
+anyhow.workspace = true

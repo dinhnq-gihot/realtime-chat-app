@@ -2,3 +2,41 @@
 resolver = "2"
 
 members = ["bin/*", "lib/*"]
+
+[workspace.dependencies]
+# members
+chatapp-services = { path = "./lib/services" }
+chatapp-logger = { path = "./lib/logger" }
+
+# db
+diesel = { version = "2.1.5", features = [
+    "postgres",
+    "serde_json",
+    "chrono",
+] } # no backend features need to be enabled
+diesel-async = { version = "0.4.1", features = ["postgres", "bb8"] }
+diesel_async_migrations = "0.12.0"
+
+# web services
+actix-web = "4.6.0"
+actix-web-lab = "0.20.2"
+jsonwebtoken = "9.3.0"
+
+# tracing
+tracing-actix-web = "0.7.11"
+tracing = { version = "0.1.40", features = ["log"] }
+tracing-appender = "0.2.3"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+
+# general
+chrono = "0.4.38"
+once_cell = "1.19.0"
+futures = "0.3.30"
+tokio = { version = "1.37.0", features = ["full"] }
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.115"
+serde_yaml = "0.9.34"
+anyhow = "1.0.81"
+thiserror = "1.0.58"
+log = "0.4.21"
+env_logger = "0.10.0"

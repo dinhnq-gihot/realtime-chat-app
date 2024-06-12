@@ -1,0 +1,22 @@
+[package]
+name = "chatapp-services"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chatapp-logger.workspace = true
+
+# web services
+actix-web.workspace = true
+jsonwebtoken.workspace = true
+actix-web-lab.workspace = true
+
+# general
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+log.workspace = true
+env_logger.workspace = true
+chrono.workspace = true
+tracing-actix-web.workspace = true
+tracing.workspace = true
