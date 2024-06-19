@@ -7,6 +7,7 @@ edition = "2021"
 diesel.workspace = true
 diesel-async.workspace = true
 chrono.workspace = true
+uuid.workspace = true
 
 futures.workspace = true
 anyhow.workspace = true

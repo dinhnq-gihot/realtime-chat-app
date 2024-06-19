@@ -9,13 +9,10 @@ chatapp-services = { path = "./lib/services" }
 chatapp-logger = { path = "./lib/logger" }
 
 # db
-diesel = { version = "2.1.5", features = [
-    "postgres",
-    "serde_json",
-    "chrono",
-] } # no backend features need to be enabled
+diesel = { version = "2.1.5", features = ["extras"] } # no backend features need to be enabled
 diesel-async = { version = "0.4.1", features = ["postgres", "bb8"] }
 diesel_async_migrations = "0.12.0"
+uuid = "1.8.0"
 
 # web services
 actix-web = "4.6.0"

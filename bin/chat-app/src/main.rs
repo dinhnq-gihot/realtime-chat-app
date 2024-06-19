@@ -1,8 +1,8 @@
 mod config;
 
-use actix_web::{get, middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use anyhow::anyhow;
-use chatapp_services::{features::auth::handler, routes};
+use chatapp_services::routes;
 use tracing_actix_web::TracingLogger;
 use tracing_subscriber::EnvFilter;
 
@@ -25,8 +25,7 @@ async fn main() -> Result<(), anyhow::Error> {
             .wrap(TracingLogger::default())
             .app_data(web::Data::new("my_secret".to_string()))
             .service(hello)
-            // .configure(routes::app_route)
-            .service(handler::login)
+            .configure(routes::app_route)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
