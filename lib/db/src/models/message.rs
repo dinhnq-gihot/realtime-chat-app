@@ -29,10 +29,10 @@ impl ToSql<MessageTypes, Pg> for MessageType {
 impl FromSql<MessageTypes, Pg> for MessageType {
     fn from_sql(bytes: diesel::pg::PgValue) -> diesel::deserialize::Result<Self> {
         match bytes.as_bytes() {
-            b"Text" => Ok(MessageType::Text),
-            b"Image" => Ok(MessageType::Image),
-            b"Video" => Ok(MessageType::Video),
-            b"File" => Ok(MessageType::File),
+            b"text" => Ok(MessageType::Text),
+            b"image" => Ok(MessageType::Image),
+            b"video" => Ok(MessageType::Video),
+            b"file" => Ok(MessageType::File),
             _ => Err("Unrecognized enum variant".into()),
         }
     }
