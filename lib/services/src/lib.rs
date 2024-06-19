@@ -1,6 +1,6 @@
 pub mod features;
 pub mod routes;
-use env_logger;
+pub use tracing;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

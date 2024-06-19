@@ -5,16 +5,18 @@ use actix_web::{
     HttpRequest, HttpResponse,
 };
 use jsonwebtoken::{encode, EncodingKey, Header};
+use tracing::{instrument, Level};
 
+#[instrument(skip_all, level = Level::DEBUG)]
 #[actix_web::post("/login")]
 pub async fn login(
     req: HttpRequest,
     payload: Json<LoginRequest>,
     secret: Data<String>,
 ) -> HttpResponse {
-    chatapp_logger::debug!("REQUEST: {req:?}");
+    tracing::debug!("REQUEST: {req:?}");
 
-    let LoginRequest { email, password } = payload.0;
+    let LoginRequest { email, password: _ } = payload.0;
 
     let claims = Claims {
         sub: email,
