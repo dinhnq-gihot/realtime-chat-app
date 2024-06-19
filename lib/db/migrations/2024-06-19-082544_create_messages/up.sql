@@ -5,5 +5,5 @@ CREATE TABLE messages (
     group_id UUID REFERENCES groups(id) ON DELETE SET NULL,
     content TEXT,
     type message_types,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );

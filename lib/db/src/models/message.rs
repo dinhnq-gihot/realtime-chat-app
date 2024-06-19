@@ -48,6 +48,7 @@ pub struct Message {
     pub user_id: Option<Uuid>,
     pub group_id: Option<Uuid>,
     pub content: Option<String>,
+    #[diesel(column_name = "type_")]
     pub r#type: Option<MessageType>,
     pub created_at: Option<DateTime<Local>>,
 }

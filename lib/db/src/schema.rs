@@ -19,7 +19,7 @@ diesel::table! {
         id -> Uuid,
         original_message_id -> Nullable<Uuid>,
         new_message_id -> Nullable<Uuid>,
-        forwarded_at -> Nullable<Timestamp>,
+        forwarded_at -> Nullable<Timestamptz>,
     }
 }
 
@@ -42,7 +42,7 @@ diesel::table! {
         content -> Nullable<Text>,
         #[sql_name = "type"]
         type_ -> Nullable<MessageTypes>,
-        created_at -> Nullable<Timestamp>,
+        created_at -> Nullable<Timestamptz>,
     }
 }
 
