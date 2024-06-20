@@ -5,11 +5,16 @@ edition = "2021"
 
 [dependencies]
 chatapp-logger.workspace = true
+chatapp-db.workspace = true
 
 # web services
 actix-web.workspace = true
 jsonwebtoken.workspace = true
 actix-web-lab.workspace = true
+
+# db
+diesel.workspace = true
+diesel-async.workspace = true
 
 # general
 serde.workspace = true
@@ -20,3 +25,6 @@ env_logger.workspace = true
 chrono.workspace = true
 tracing-actix-web.workspace = true
 tracing.workspace = true
+uuid.workspace = true
+anyhow.workspace = true
+utoipa.workspace = true
