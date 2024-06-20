@@ -8,7 +8,6 @@ pub struct Group {
     pub name: String
 }
 
-
 #[derive(Debug, Insertable)]
 #[diesel(table_name = crate::schema::groups)]
 #[diesel(check_for_backend(diesel::pg::Pg))]

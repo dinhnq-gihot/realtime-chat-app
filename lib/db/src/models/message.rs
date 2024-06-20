@@ -2,7 +2,18 @@ use {
     crate::{
         models::{group::Group, user::User},
         schema::sql_types::MessageTypes,
-    }, chrono::{DateTime, Local}, diesel::{deserialize::{FromSql, FromSqlRow}, expression::AsExpression, pg::Pg, prelude::*, serialize::{IsNull, ToSql}}, serde::{Deserialize, Serialize}, std::io::Write, uuid::Uuid
+    },
+    chrono::{DateTime, Local},
+    diesel::{
+        deserialize::{FromSql, FromSqlRow},
+        expression::AsExpression,
+        pg::Pg,
+        prelude::*,
+        serialize::{IsNull, ToSql},
+    },
+    serde::{Deserialize, Serialize},
+    std::io::Write,
+    uuid::Uuid,
 };
 
 #[derive(Debug, Serialize, Deserialize, AsExpression, FromSqlRow)]
@@ -15,7 +26,10 @@ pub enum MessageType {
 }
 
 impl ToSql<MessageTypes, Pg> for MessageType {
-    fn to_sql<'b>(&'b self, out: &mut diesel::serialize::Output<'b, '_, Pg>) -> diesel::serialize::Result {
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, Pg>,
+    ) -> diesel::serialize::Result {
         match *self {
             MessageType::File => out.write_all(b"file")?,
             MessageType::Image => out.write_all(b"image")?,
@@ -51,4 +65,16 @@ pub struct Message {
     #[diesel(column_name = "type_")]
     pub r#type: Option<MessageType>,
     pub created_at: Option<DateTime<Local>>,
+}
+
+#[derive(Debug, Insertable)]
+#[diesel(table_name = crate::schema::messages)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewMessage<'a> {
+    pub user_id: Option<&'a Uuid>,
+    pub group_id: Option<&'a Uuid>,
+    pub content: Option<&'a str>,
+    #[diesel(column_name = "type_")]
+    pub r#type: Option<&'a MessageType>,
+    pub created_at: Option<&'a DateTime<Local>>
 }
