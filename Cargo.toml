@@ -6,13 +6,16 @@ members = ["bin/*", "lib/*"]
 [workspace.dependencies]
 # members
 chatapp-services = { path = "./lib/services" }
+chatapp-db = { path = "./lib/db" }
 chatapp-logger = { path = "./lib/logger" }
 
 # db
-diesel = { version = "2.1.5", features = ["extras"] } # no backend features need to be enabled
+diesel = { version = "2.1.5", features = [
+    "extras",
+] } # no backend features need to be enabled
 diesel-async = { version = "0.4.1", features = ["postgres", "bb8"] }
 diesel_async_migrations = "0.12.0"
-uuid = "1.8.0"
+uuid = { version = "1.8.0", features = ["serde"] }
 
 # web services
 actix-web = "4.6.0"
@@ -37,3 +40,4 @@ anyhow = "1.0.81"
 thiserror = "1.0.58"
 log = "0.4.21"
 env_logger = "0.10.0"
+utoipa = "4.2.3"
