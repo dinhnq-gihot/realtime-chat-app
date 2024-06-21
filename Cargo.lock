@@ -474,6 +474,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "anyhow",
+ "chatapp-db",
  "chatapp-logger",
  "chatapp-services",
  "env_logger",
@@ -519,6 +520,7 @@ dependencies = [
 name = "chatapp-services"
 version = "0.1.0"
 dependencies = [
+ "actix-service",
  "actix-web",
  "actix-web-lab",
  "anyhow",
@@ -528,10 +530,12 @@ dependencies = [
  "diesel",
  "diesel-async",
  "env_logger",
+ "futures-util",
  "jsonwebtoken",
  "log",
  "serde",
  "serde_json",
+ "thiserror",
  "tokio",
  "tracing",
  "tracing-actix-web",

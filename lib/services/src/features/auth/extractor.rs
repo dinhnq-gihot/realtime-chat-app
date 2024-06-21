@@ -6,7 +6,7 @@ use actix_web::{
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use log::debug;
 
-use crate::features::auth::models::Claims;
+use crate::{features::auth::types::Claims, utils::jwt};
 
 #[derive(Debug)]
 pub struct AuthenticationToken {
@@ -43,6 +43,10 @@ impl FromRequest for AuthenticationToken {
             &DecodingKey::from_secret(secret.as_bytes()),
             &Validation::new(jsonwebtoken::Algorithm::HS256),
         );
+
+        let user_id = jwt::decode_jwt(authentication_token, secret.to_string())
+            .map_err(|e| ready(Err(ErrorUnauthorized(e.to_string()))))
+            .unwrap();
 
         match token_result {
             Ok(token) => ready(Ok(AuthenticationToken {

@@ -11,6 +11,7 @@ chatapp-db.workspace = true
 actix-web.workspace = true
 jsonwebtoken.workspace = true
 actix-web-lab.workspace = true
+actix-service.workspace = true
 
 # db
 diesel.workspace = true
@@ -28,3 +29,5 @@ tracing.workspace = true
 uuid.workspace = true
 anyhow.workspace = true
 utoipa.workspace = true
+thiserror.workspace = true
+futures-util.workspace = true

@@ -14,6 +14,7 @@ use {
 
 pub static MIGRATIONS: Lazy<EmbeddedMigrations> = Lazy::new(|| embed_migrations!("./migrations"));
 
+#[derive(Clone)]
 pub struct Database {
     pool: Pool<AsyncPgConnection>,
     _url: String,

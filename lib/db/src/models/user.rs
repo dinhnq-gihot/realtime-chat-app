@@ -1,4 +1,5 @@
 use diesel::prelude::*;
+use uuid::Uuid;
 
 #[derive(Debug, Identifiable, AsChangeset, Selectable, Queryable, PartialEq, Clone)]
 #[diesel(table_name = crate::schema::users)]
@@ -9,14 +10,16 @@ pub struct User {
     pub email: String,
     pub password: String,
     pub avatar: Option<String>,
-    pub is_online: Option<bool>
+    pub is_online: Option<bool>,
 }
 
 #[derive(Debug, Insertable)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewUser<'a> {
+    pub id: &'a Uuid,
     pub name: &'a str,
     pub email: &'a str,
-    pub password: &'a str
+    pub password: &'a str,
+    pub avatar: Option<&'a str>,
 }

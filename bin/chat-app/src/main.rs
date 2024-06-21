@@ -1,7 +1,10 @@
 mod config;
 
+use std::sync::Arc;
+
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use anyhow::anyhow;
+use chatapp_db::database::Database;
 use chatapp_services::routes;
 use tracing_actix_web::TracingLogger;
 use tracing_subscriber::EnvFilter;
@@ -14,16 +17,20 @@ async fn hello() -> impl Responder {
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG)
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
         .with_env_filter(EnvFilter::from_default_env())
         .init();
 
     tracing::info!("Starting HTTP server at http://localhost:8080");
 
-    HttpServer::new(|| {
+    let db = Database::new("postgresql://chatapp:123@localhost:15432/chatapp".into()).await;
+
+    HttpServer::new(move || {
         App::new()
             .wrap(TracingLogger::default())
             .app_data(web::Data::new("my_secret".to_string()))
+            .app_data(web::Data::new(db.clone()))
             .service(hello)
             .configure(routes::app_route)
     })

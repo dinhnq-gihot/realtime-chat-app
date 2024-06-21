@@ -1,12 +1,12 @@
-use actix_web::web;
+use {actix_web::web, super::handlers, crate::features::users::handlers as user_handlers};
 use tracing::{instrument, Level};
-
-use super::handler;
 
 #[instrument(skip_all, level = Level::INFO)]
 pub fn auth_route(conf: &mut web::ServiceConfig) {
     let scope = web::scope("")
-        .service(handler::login)
-        .service(handler::protected);
+        .service(handlers::login)
+        .service(handlers::protected)
+        .service(user_handlers::create_user);
+
     conf.service(scope);
 }

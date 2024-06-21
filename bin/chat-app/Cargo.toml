@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 chatapp-services.workspace = true
+chatapp-db.workspace = true
 chatapp-logger.workspace = true
 
 tokio.workspace = true

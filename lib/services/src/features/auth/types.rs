@@ -1,12 +1,7 @@
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-#[derive(Serialize)]
-pub struct LoginResponse {
-    pub msg: String,
-    pub token: String,
-}
-
-#[derive(Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LoginRequest {
     pub email: String,
     pub password: String,
@@ -16,9 +11,5 @@ pub struct LoginRequest {
 pub struct Claims {
     pub sub: String, // the subject of the token
     pub exp: usize,  // the expiry time
-}
-
-#[derive(Serialize)]
-pub struct Response {
-    pub msg: String,
+    pub id: Uuid,
 }

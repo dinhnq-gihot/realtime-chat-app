@@ -1,5 +1,5 @@
 use {
-    chatapp_db::models::user::{NewUser as NewUserModel, User as UserModel},
+    chatapp_db::models::user::User as UserModel,
     serde::{Deserialize, Serialize},
     utoipa::ToSchema,
     uuid::Uuid,
@@ -11,7 +11,6 @@ pub struct CreateUserRequest {
     pub email: String,
     pub password: String,
     pub avatar: Option<String>,
-    pub is_online: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -43,15 +42,16 @@ pub struct UserResponseData {
     pub is_online: bool,
 }
 
-impl<'a> From<&'a CreateUserRequest> for NewUserModel<'a> {
-    fn from(value: &'a CreateUserRequest) -> Self {
-        Self {
-            name: &value.name,
-            email: &value.email,
-            password: &value.password,
-        }
-    }
-}
+// impl<'a> From<&'a CreateUserRequest> for NewUserModel<'a> {
+//     fn from(value: &'a CreateUserRequest) -> Self {
+//         Self {
+//             name: &value.name,
+//             email: &value.email,
+//             password: &value.password,
+//             avatar: value.avatar.as_deref(),
+//         }
+//     }
+// }
 
 impl From<UserModel> for UserResponseData {
     fn from(value: UserModel) -> Self {

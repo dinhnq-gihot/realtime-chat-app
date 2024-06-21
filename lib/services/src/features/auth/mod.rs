@@ -1,4 +1,5 @@
-pub mod handler;
-pub mod models;
+pub mod handlers;
+pub mod types;
 pub mod routes;
 pub mod extractor;
+pub mod middleware;

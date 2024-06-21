@@ -21,6 +21,7 @@ uuid = { version = "1.8.0", features = ["serde"] }
 actix-web = "4.6.0"
 actix-web-lab = "0.20.2"
 jsonwebtoken = "9.3.0"
+actix-service = "2.0.2"
 
 # tracing
 tracing-actix-web = "0.7.11"
@@ -41,3 +42,4 @@ thiserror = "1.0.58"
 log = "0.4.21"
 env_logger = "0.10.0"
 utoipa = "4.2.3"
+futures-util = "0.3.30"
