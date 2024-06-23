@@ -1,58 +1,30 @@
+use actix_web::{http::header::AUTHORIZATION, FromRequest};
+use anyhow::anyhow;
+use log::debug;
 use std::future::ready;
 
-use actix_web::{
-    error::ErrorUnauthorized, http::header::AUTHORIZATION, web, Error as ActixWebError, FromRequest,
-};
-use jsonwebtoken::{decode, DecodingKey, Validation};
-use log::debug;
+use crate::{errors::MyError, features::auth::types::Claims, utils::jwt::decode_jwt};
 
-use crate::{features::auth::types::Claims, utils::jwt};
-
-#[derive(Debug)]
-pub struct AuthenticationToken {
-    pub sub: String,
-}
-
-impl FromRequest for AuthenticationToken {
-    type Error = ActixWebError;
+impl FromRequest for Claims {
+    type Error = MyError;
     type Future = std::future::Ready<Result<Self, Self::Error>>;
 
     fn from_request(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Self::Future {
         debug!("REQUEST: {req:?}");
-        let authorization_header = req.headers().get(AUTHORIZATION);
-        if authorization_header.is_none() {
-            return ready(Err(ErrorUnauthorized("No authentication token sent!")));
+
+        if let Some(auth_header) = req.headers().get(AUTHORIZATION) {
+            if let Ok(auth_str) = auth_header.to_str() {
+                if let Some(token) = auth_str.strip_prefix("Bearer ") {
+                    match decode_jwt(token.to_owned()) {
+                        Ok(claims) => return ready(Ok(claims)),
+                        Err(e) => return ready(Err(MyError::Unauthorized(e))),
+                    }
+                }
+            }
         }
 
-        let authentication_token = authorization_header
-            .unwrap()
-            .to_str()
-            .unwrap_or("")
-            .replace("Bearer ", "")
-            .to_string();
-        if authentication_token.is_empty() {
-            return ready(Err(ErrorUnauthorized(
-                "Authentication token has foreign chars!",
-            )));
-        }
-
-        let secret = req.app_data::<web::Data<String>>().unwrap();
-
-        let token_result = decode::<Claims>(
-            &authentication_token,
-            &DecodingKey::from_secret(secret.as_bytes()),
-            &Validation::new(jsonwebtoken::Algorithm::HS256),
-        );
-
-        let user_id = jwt::decode_jwt(authentication_token, secret.to_string())
-            .map_err(|e| ready(Err(ErrorUnauthorized(e.to_string()))))
-            .unwrap();
-
-        match token_result {
-            Ok(token) => ready(Ok(AuthenticationToken {
-                sub: token.claims.sub,
-            })),
-            Err(e) => ready(Err(ErrorUnauthorized(e.to_string()))),
-        }
+        ready(Err(MyError::Unauthorized(anyhow!(
+            "Authorization header missing or malformed"
+        ))))
     }
 }

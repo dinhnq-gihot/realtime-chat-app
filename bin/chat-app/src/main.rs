@@ -1,7 +1,5 @@
 mod config;
 
-use std::sync::Arc;
-
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use anyhow::anyhow;
 use chatapp_db::database::Database;
@@ -29,7 +27,6 @@ async fn main() -> Result<(), anyhow::Error> {
     HttpServer::new(move || {
         App::new()
             .wrap(TracingLogger::default())
-            .app_data(web::Data::new("my_secret".to_string()))
             .app_data(web::Data::new(db.clone()))
             .service(hello)
             .configure(routes::app_route)

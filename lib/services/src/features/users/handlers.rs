@@ -3,13 +3,16 @@ use {
         CreateResponse, CreateUserRequest, DeleteResponse, GetAllResponse, GetResponse,
         UpdateResponse, UpdateUserRequest, UserResponseData,
     },
-    crate::errors::{MyError, Result as CustomResult},
+    crate::{
+        errors::{MyError, Result as CustomResult},
+        features::auth::types::Claims,
+    },
     actix_web::{
         delete, get,
         http::StatusCode,
         patch, post,
         web::{Data, Json, Path},
-        HttpRequest, HttpResponse,
+        HttpMessage, HttpRequest, HttpResponse,
     },
     chatapp_db::{database::Database, models::user::NewUser, repositories::user::Users},
     std::sync::Arc,
@@ -39,7 +42,7 @@ pub async fn create_user(
     let created_user = user_repo
         .create_user(new_user)
         .await
-        .map_err(|e| MyError::InternalError(e.into()))?;
+        .map_err(MyError::InternalError)?;
 
     Ok(HttpResponse::Ok()
         .status(StatusCode::OK)
@@ -57,11 +60,15 @@ pub async fn get_user_by_id(
 ) -> CustomResult<HttpResponse> {
     debug!("{req:#?}");
 
+    let extension = req.extensions();
+    let claims = (*extension).get::<Claims>();
+    println!("{claims:#?}");
+
     let user_repo = Users::new(Arc::clone(&db.into_inner()));
     let user = user_repo
         .get_user_by_id(id.into_inner())
         .await
-        .map_err(|e| MyError::InternalError(e.into()))?;
+        .map_err(MyError::InternalError)?;
 
     Ok(HttpResponse::Ok().status(StatusCode::OK).json(GetResponse {
         msg: "success".into(),
@@ -69,7 +76,7 @@ pub async fn get_user_by_id(
     }))
 }
 
-#[get("/")]
+#[get("")]
 pub async fn get_all_user(req: HttpRequest, db: Data<Database>) -> CustomResult<HttpResponse> {
     debug!("{req:#?}");
     println!("{req:#?}");
@@ -78,9 +85,9 @@ pub async fn get_all_user(req: HttpRequest, db: Data<Database>) -> CustomResult<
     let all_users = user_repo
         .get_all_users()
         .await
-        .map_err(|e| MyError::InternalError(e.into()))?
+        .map_err(MyError::InternalError)?
         .into_iter()
-        .map(|user| UserResponseData::from(user))
+        .map(UserResponseData::from)
         .collect::<Vec<UserResponseData>>();
 
     Ok(HttpResponse::Ok()
@@ -111,7 +118,7 @@ pub async fn update_user(
             _payload.avatar,
         )
         .await
-        .map_err(|e| MyError::InternalError(e.into()))?;
+        .map_err(MyError::InternalError)?;
 
     Ok(HttpResponse::Ok()
         .status(StatusCode::OK)
@@ -133,7 +140,7 @@ pub async fn delete_user(
     user_repo
         .delete_user(id.into_inner())
         .await
-        .map_err(|e| MyError::InternalError(e.into()))?;
+        .map_err(MyError::InternalError)?;
 
     Ok(HttpResponse::Ok()
         .status(StatusCode::OK)

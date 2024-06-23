@@ -6,7 +6,10 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum MyError {
     #[error("Internal Server Error: {0}")]
-    InternalError(#[from] AnyhowError),
+    InternalError(#[source] AnyhowError),
+
+    #[error("Unauthorized Error: {0}")]
+    Unauthorized(#[source] AnyhowError),
 }
 
 impl ResponseError for MyError {
@@ -17,10 +20,18 @@ impl ResponseError for MyError {
             pub data: Option<U>,
         }
 
-        HttpResponse::InternalServerError().json(ErrorResponse::<String> {
-            msg: self.to_string(),
-            data: None,
-        })
+        match self {
+            Self::InternalError(e) => {
+                HttpResponse::InternalServerError().json(ErrorResponse::<String> {
+                    msg: e.to_string(),
+                    data: None,
+                })
+            }
+            Self::Unauthorized(e) => HttpResponse::Unauthorized().json(ErrorResponse::<String> {
+                msg: e.to_string(),
+                data: None,
+            }),
+        }
     }
 
     fn status_code(&self) -> StatusCode {

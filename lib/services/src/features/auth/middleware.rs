@@ -1,26 +1,15 @@
-use actix_service::ServiceFactory;
 use actix_web::{
     dev::{Service, ServiceRequest, ServiceResponse, Transform},
-    Error, HttpMessage, HttpResponse,
+    http::header::AUTHORIZATION,
+    Error, HttpMessage,
 };
 use futures_util::future::{ok, LocalBoxFuture, Ready};
-use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
-use serde::{Deserialize, Serialize};
-use std::pin::Pin;
-use std::rc::Rc;
 use std::task::{Context, Poll};
 
-// JWT Claims
-#[derive(Debug, Serialize, Deserialize)]
-struct Claims {
-    sub: String,
-    exp: usize,
-}
+use crate::utils::jwt::decode_jwt;
 
 // Middleware struct
-struct AuthMiddleware {
-    secret: Rc<String>,
-}
+pub struct AuthMiddleware;
 
 // Middleware factory
 impl<S, B> Transform<S, ServiceRequest> for AuthMiddleware
@@ -36,16 +25,12 @@ where
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        ok(AuthMiddlewareMiddleware {
-            service,
-            secret: Rc::clone(&self.secret),
-        })
+        ok(AuthMiddlewareMiddleware { service })
     }
 }
 
-struct AuthMiddlewareMiddleware<S> {
+pub struct AuthMiddlewareMiddleware<S> {
     service: S,
-    secret: Rc<String>,
 }
 
 impl<S, B> Service<ServiceRequest> for AuthMiddlewareMiddleware<S>
@@ -58,42 +43,38 @@ where
     type Error = Error;
     type Future = LocalBoxFuture<'static, Result<Self::Response, Self::Error>>;
 
-    fn poll_ready(&mut self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+    fn poll_ready(&self, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         self.service.poll_ready(cx)
     }
 
-    fn call(&mut self, req: ServiceRequest) -> Self::Future {
-        let secret = Rc::clone(&self.secret);
-        let fut = self.service.call(req);
-
-        Box::pin(async move {
-            let req = fut.await?;
-
-            // Extract the token from the Authorization header
-            if let Some(auth_header) = req.headers().get("Authorization") {
-                if let Ok(auth_str) = auth_header.to_str() {
-                    if auth_str.starts_with("Bearer ") {
-                        let token = &auth_str[7..];
-                        let validation = Validation::new(Algorithm::HS256);
-
-                        match decode::<Claims>(
-                            token,
-                            &DecodingKey::from_secret(secret.as_ref().as_bytes()),
-                            &validation,
-                        ) {
-                            Ok(token_data) => {
-                                req.extensions_mut().insert(token_data.claims);
-                                return Ok(req);
-                            }
-                            Err(_) => {
-                                return Ok(req.error_response(HttpResponse::Unauthorized().finish()))
-                            }
+    fn call(&self, req: ServiceRequest) -> Self::Future {
+        
+        if let Some(auth_header) = req.request().headers().get(AUTHORIZATION) {
+            if let Ok(auth_str) = auth_header.to_str() {
+                if let Some(token) = auth_str.strip_prefix("Bearer ") {
+                    match decode_jwt(token.to_owned()) {
+                        Ok(token_data) => {
+                            req.request().extensions_mut().insert(token_data);
+                            return Box::pin(async move {
+                                let fut = self.service.call(req);
+                                let service_resp = fut.await?;
+                                Ok(service_resp)
+                            });
+                        }
+                        Err(e) => {
+                            return Box::pin(async move {
+                                Err(actix_web::error::ErrorUnauthorized(e.to_string()))
+                            })
                         }
                     }
                 }
             }
+        }
 
-            Ok(req.error_response(HttpResponse::Unauthorized().finish()))
+        Box::pin(async move {
+            Err(actix_web::error::ErrorUnauthorized(
+                "Authorization header missing or malformed",
+            ))
         })
     }
 }
