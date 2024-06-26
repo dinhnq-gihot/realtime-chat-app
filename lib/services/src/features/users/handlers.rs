@@ -16,7 +16,7 @@ use {
     },
     chatapp_db::{database::Database, models::user::NewUser, repositories::user::Users},
     std::sync::Arc,
-    tracing::debug,
+    tracing::{debug, instrument},
     uuid::Uuid,
 };
 
@@ -53,6 +53,7 @@ pub async fn create_user(
 }
 
 #[get("/{id}")]
+#[instrument]
 pub async fn get_user_by_id(
     req: HttpRequest,
     id: Path<Uuid>,

@@ -26,7 +26,6 @@ async fn main() -> Result<(), anyhow::Error> {
 
     HttpServer::new(move || {
         App::new()
-            .wrap(TracingLogger::default())
             .app_data(web::Data::new(db.clone()))
             .service(hello)
             .configure(routes::app_route)
