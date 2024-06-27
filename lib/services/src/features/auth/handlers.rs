@@ -13,16 +13,15 @@ use actix_web::{
     HttpRequest, HttpResponse,
 };
 use chatapp_db::{database::Database, repositories::user::Users as UsersRepository};
-use tracing::{instrument, Level};
+use chatapp_logger::{debug, info};
 
 #[actix_web::post("/login")]
-#[instrument(skip_all, level = Level::DEBUG)]
 pub async fn login(
     req: HttpRequest,
     payload: Json<LoginRequest>,
     db: Data<Database>,
 ) -> Result<HttpResponse> {
-    tracing::debug!("REQUEST: {req:?}");
+    debug!("REQUEST: {req:?}");
 
     let LoginRequest { email, password } = payload.0;
 
@@ -44,7 +43,7 @@ pub async fn login(
 
 #[actix_web::get("/protected")]
 async fn protected(claims: Claims) -> HttpResponse {
-    chatapp_logger::debug!("{:#?}", claims);
+    debug!("{claims:#?}");
     println!("{claims:#?}");
 
     HttpResponse::Ok()

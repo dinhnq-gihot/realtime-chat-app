@@ -1,6 +1,6 @@
 mod config;
 
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder};
 use anyhow::anyhow;
 use chatapp_db::database::Database;
 use chatapp_services::routes;
@@ -15,18 +15,19 @@ async fn hello() -> impl Responder {
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::DEBUG)
-        .with_env_filter(EnvFilter::from_default_env())
-        .init();
+    // tracing_subscriber::fmt()
+    //     .with_max_level(tracing::Level::DEBUG)
+    //     .with_env_filter(EnvFilter::from_default_env())
+    //     .init();
+    chatapp_logger::init(None, false)?;
 
-    tracing::info!("Starting HTTP server at http://localhost:8080");
+    chatapp_logger::info!("Starting HTTP server at http://localhost:8080");
 
     let db = Database::new("postgresql://chatapp:123@localhost:15432/chatapp".into()).await;
 
     HttpServer::new(move || {
         App::new()
-            .wrap(TracingLogger::default())
+            .wrap(Logger::default())
             .app_data(web::Data::new(db.clone()))
             .service(hello)
             .configure(routes::app_route)
