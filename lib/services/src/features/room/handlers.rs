@@ -15,7 +15,7 @@ pub async fn create_room(
 ) -> CustomResult<HttpResponse> {
     debug!("{req:#?}");
 
-    let group_repo = Group
+    // let group_repo = Group
 
-    Ok(HttpResponse::Ok())
+    Ok(HttpResponse::Ok().finish())
 }

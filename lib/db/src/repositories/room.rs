@@ -1,11 +1,11 @@
 use crate::{
     database::Database,
     models::{
-        group::{self, Group, NewGroup},
+        group::{Group, NewGroup},
         relationships::{NewUserGroup, UserGroup},
         user::User,
     },
-    schema::{groups, users, users_groups},
+    schema::{groups, users_groups},
 };
 use anyhow::Result;
 use diesel::{insert_into, prelude::*};
@@ -22,7 +22,7 @@ impl Rooms {
         Self { db }
     }
 
-    pub async fn add_user_to_room(&self, room_id: Uuid, user_id: Uuid) -> Result<()> {
+    pub async fn add_room_to_user(&self, room_id: Uuid, user_id: Uuid) -> Result<()> {
         let new_room_user = NewUserGroup {
             user_id: &user_id,
             group_id: &room_id,
@@ -55,16 +55,22 @@ impl Rooms {
 
     pub async fn get_room_by_id(&self, id: Uuid) -> Result<Group> {
         let mut conn = self.db.get_connection().await;
-        let ret = groups::table
+        let res = groups::table
             .find(id)
             .select(Group::as_select())
             .first(&mut conn)
-            .await?;
+            .await;
 
-        Ok(ret)
+        match res {
+            Ok(ret) => Ok(ret),
+            Err(e) => match e {
+                diesel::NotFound => Ok(Group::default()),
+                _ => Err(e.into()),
+            },
+        }
     }
 
-    pub async fn get_room_by_user_id(&self, user: &User) -> Result<Vec<Group>> {
+    pub async fn get_rooms_by_user(&self, user: &User) -> Result<Vec<Group>> {
         let mut conn = self.db.get_connection().await;
 
         let groups = UserGroup::belonging_to(user)
@@ -76,8 +82,34 @@ impl Rooms {
         Ok(groups)
     }
 
-    pub async fn update_name(&self, name: Option<String>) -> Result<Group> {
+    pub async fn update_name(&self, room_id: Uuid, room_name: Option<String>) -> Result<Group> {
         let mut conn = self.db.get_connection().await;
+        let mut room = self.get_room_by_id(room_id).await?;
+
+        if room.id.is_nil() {
+            return Ok(room);
+        }
+
+        if room_name.is_some() {
+            room.name = room_name.unwrap();
+        }
+
+        let ret = diesel::update(groups::table)
+            .filter(groups::id.eq(room_id))
+            .set(room)
+            .returning(Group::as_returning())
+            .get_result(&mut conn)
+            .await?;
+
+        Ok(ret)
+    }
+
+    pub async fn delete(&self, room_id: Uuid) -> Result<()> {
+        let mut conn = self.db.get_connection().await;
+        diesel::delete(groups::table)
+            .filter(groups::id.eq(room_id))
+            .execute(&mut conn)
+            .await?;
 
         Ok(())
     }

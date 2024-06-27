@@ -13,7 +13,7 @@ use actix_web::{
     HttpRequest, HttpResponse,
 };
 use chatapp_db::{database::Database, repositories::user::Users as UsersRepository};
-use chatapp_logger::{debug, info};
+use chatapp_logger::debug;
 
 #[actix_web::post("/login")]
 pub async fn login(

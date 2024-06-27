@@ -13,6 +13,19 @@ pub struct User {
     pub is_online: Option<bool>,
 }
 
+impl Default for User {
+    fn default() -> Self {
+        Self {
+            id: Uuid::nil(),
+            name: Default::default(),
+            email: Default::default(),
+            password: Default::default(),
+            avatar: Default::default(),
+            is_online: Default::default(),
+        }
+    }
+}
+
 #[derive(Debug, Insertable)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]

@@ -1,8 +1,12 @@
 use {
     crate::{
         database::Database,
-        models::user::{NewUser, User},
-        schema::users,
+        models::{
+            group::Group,
+            relationships::{NewUserGroup, UserGroup},
+            user::{NewUser, User},
+        },
+        schema::{users, users_groups},
     },
     anyhow::{anyhow, Result},
     diesel::{delete, insert_into, prelude::*, update},
@@ -64,12 +68,19 @@ impl Users {
 
     pub async fn get_user_by_id(&self, id: Uuid) -> Result<User> {
         let mut conn = self.db.get_connection().await;
-        users::table
+        let user = users::table
             .find(id)
             .select(User::as_select())
             .first(&mut conn)
-            .await
-            .map_err(|e| anyhow!(e.to_string()))
+            .await;
+
+        match user {
+            Ok(ret) => Ok(ret),
+            Err(e) => match e {
+                diesel::NotFound => Ok(User::default()),
+                _ => Err(e.into()),
+            },
+        }
     }
 
     pub async fn get_all_users(&self) -> Result<Vec<User>> {
@@ -78,6 +89,33 @@ impl Users {
             .load(&mut conn)
             .await
             .map_err(|e| anyhow!(e.to_string()))
+    }
+
+    pub async fn get_users_by_room(&self, room: &Group) -> Result<Vec<User>> {
+        let mut conn = self.db.get_connection().await;
+
+        let ret = UserGroup::belonging_to(room)
+            .inner_join(users::table)
+            .select(User::as_select())
+            .load(&mut conn)
+            .await?;
+
+        Ok(ret)
+    }
+
+    pub async fn add_user_to_room(&self, user_id: Uuid, room_id: Uuid) -> Result<()> {
+        let new_room_user = NewUserGroup {
+            user_id: &user_id,
+            group_id: &room_id,
+        };
+
+        let mut conn = self.db.get_connection().await;
+        insert_into(users_groups::table)
+            .values(new_room_user)
+            .execute(&mut conn)
+            .await?;
+
+        Ok(())
     }
 
     pub async fn login(&self, email: String, password: String) -> Result<User> {
