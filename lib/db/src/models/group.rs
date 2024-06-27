@@ -5,12 +5,14 @@ use diesel::prelude::*;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Group {
     pub id: uuid::Uuid,
-    pub name: String
+    pub name: String,
 }
 
 #[derive(Debug, Insertable)]
 #[diesel(table_name = crate::schema::groups)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewGroup<'a> {
-    pub name: &'a str
+    pub id: &'a uuid::Uuid,
+    pub name: &'a str,
 }
+
