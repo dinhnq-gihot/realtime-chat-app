@@ -10,6 +10,9 @@ pub enum MyError {
 
     #[error("Unauthorized Error: {0}")]
     Unauthorized(#[source] AnyhowError),
+
+    #[error("Resources not found!")]
+    NotFound,
 }
 
 impl ResponseError for MyError {
@@ -31,11 +34,19 @@ impl ResponseError for MyError {
                 msg: e.to_string(),
                 data: None,
             }),
+            Self::NotFound => HttpResponse::NotFound().json(ErrorResponse::<String> {
+                msg: "not found".into(),
+                data: None,
+            }),
         }
     }
 
     fn status_code(&self) -> StatusCode {
-        StatusCode::INTERNAL_SERVER_ERROR
+        match self {
+            Self::InternalError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::Unauthorized(_) => StatusCode::UNAUTHORIZED,
+            Self::NotFound => StatusCode::NOT_FOUND,
+        }
     }
 }
 

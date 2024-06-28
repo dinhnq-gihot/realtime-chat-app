@@ -19,7 +19,7 @@ use chatapp_logger::debug;
 pub async fn login(
     req: HttpRequest,
     payload: Json<LoginRequest>,
-    db: Data<Database>,
+    db: Data<Arc<Database>>,
 ) -> Result<HttpResponse> {
     debug!("REQUEST: {req:?}");
 

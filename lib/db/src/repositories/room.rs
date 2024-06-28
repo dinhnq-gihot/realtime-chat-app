@@ -18,11 +18,11 @@ pub struct Rooms {
 }
 
 impl Rooms {
-    pub fn new(&self, db: Arc<Database>) -> Self {
+    pub fn new(db: Arc<Database>) -> Self {
         Self { db }
     }
 
-    pub async fn add_room_to_user(&self, room_id: Uuid, user_id: Uuid) -> Result<()> {
+    pub async fn add_user_to_room(&self, room_id: Uuid, user_id: Uuid) -> Result<()> {
         let new_room_user = NewUserGroup {
             user_id: &user_id,
             group_id: &room_id,
@@ -73,13 +73,13 @@ impl Rooms {
     pub async fn get_rooms_by_user(&self, user: &User) -> Result<Vec<Group>> {
         let mut conn = self.db.get_connection().await;
 
-        let groups = UserGroup::belonging_to(user)
+        let ret = UserGroup::belonging_to(user)
             .inner_join(groups::table)
             .select(Group::as_select())
             .load(&mut conn)
             .await?;
 
-        Ok(groups)
+        Ok(ret)
     }
 
     pub async fn update_name(&self, room_id: Uuid, room_name: Option<String>) -> Result<Group> {

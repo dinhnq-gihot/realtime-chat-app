@@ -12,11 +12,11 @@ use {
         http::StatusCode,
         patch, post,
         web::{Data, Json, Path},
-        HttpMessage, HttpRequest, HttpResponse,
+        HttpRequest, HttpResponse,
     },
     chatapp_db::{database::Database, models::user::NewUser, repositories::user::Users},
     std::sync::Arc,
-    tracing::{debug, instrument},
+    tracing::debug,
     uuid::Uuid,
 };
 
@@ -24,7 +24,7 @@ use {
 pub async fn create_user(
     req: HttpRequest,
     payload: Json<CreateUserRequest>,
-    db: Data<Database>,
+    db: Data<Arc<Database>>,
 ) -> CustomResult<HttpResponse> {
     debug!("{req:#?}");
 
@@ -53,23 +53,23 @@ pub async fn create_user(
 }
 
 #[get("/{id}")]
-#[instrument]
 pub async fn get_user_by_id(
     req: HttpRequest,
     id: Path<Uuid>,
-    db: Data<Database>,
+    db: Data<Arc<Database>>,
+    _claims: Claims,
 ) -> CustomResult<HttpResponse> {
     debug!("{req:#?}");
-
-    let extension = req.extensions();
-    let claims = (*extension).get::<Claims>();
-    println!("{claims:#?}");
 
     let user_repo = Users::new(Arc::clone(&db.into_inner()));
     let user = user_repo
         .get_user_by_id(id.into_inner())
         .await
         .map_err(MyError::InternalError)?;
+
+    if user.id.is_nil() {
+        return Err(MyError::NotFound);
+    }
 
     Ok(HttpResponse::Ok().status(StatusCode::OK).json(GetResponse {
         msg: "success".into(),
@@ -78,7 +78,11 @@ pub async fn get_user_by_id(
 }
 
 #[get("")]
-pub async fn get_all_user(req: HttpRequest, db: Data<Database>) -> CustomResult<HttpResponse> {
+pub async fn get_all_user(
+    req: HttpRequest,
+    db: Data<Arc<Database>>,
+    _claims: Claims,
+) -> CustomResult<HttpResponse> {
     debug!("{req:#?}");
     println!("{req:#?}");
 
@@ -102,9 +106,10 @@ pub async fn get_all_user(req: HttpRequest, db: Data<Database>) -> CustomResult<
 #[patch("/{id}")]
 pub async fn update_user(
     req: HttpRequest,
-    db: Data<Database>,
+    db: Data<Arc<Database>>,
     id: Path<Uuid>,
     payload: Json<UpdateUserRequest>,
+    _claims: Claims,
 ) -> CustomResult<HttpResponse> {
     debug!("{req:#?}");
 
@@ -132,8 +137,9 @@ pub async fn update_user(
 #[delete("/{id}")]
 pub async fn delete_user(
     req: HttpRequest,
-    db: Data<Database>,
+    db: Data<Arc<Database>>,
     id: Path<Uuid>,
+    _claims: Claims,
 ) -> CustomResult<HttpResponse> {
     debug!("{req:#?}");
 
