@@ -4,6 +4,7 @@ CREATE TABLE messages (
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     group_id UUID REFERENCES groups(id) ON DELETE SET NULL,
     content TEXT,
-    type message_types,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    type message_types DEFAULT 'text',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    edited_at TIMESTAMPTZ NOT NULL
 );

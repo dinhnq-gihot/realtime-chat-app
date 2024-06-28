@@ -3,7 +3,7 @@ use {
         models::{group::Group, user::User},
         schema::sql_types::MessageTypes,
     },
-    chrono::{DateTime, Local},
+    chrono::NaiveDateTime,
     diesel::{
         deserialize::{FromSql, FromSqlRow},
         expression::AsExpression,
@@ -23,6 +23,12 @@ pub enum MessageType {
     Image,
     Video,
     File,
+}
+
+impl Default for MessageType {
+    fn default() -> Self {
+        Self::Text
+    }
 }
 
 impl ToSql<MessageTypes, Pg> for MessageType {
@@ -64,7 +70,22 @@ pub struct Message {
     pub content: Option<String>,
     #[diesel(column_name = "type_")]
     pub r#type: Option<MessageType>,
-    pub created_at: Option<DateTime<Local>>,
+    pub created_at: NaiveDateTime,
+    pub edited_at: NaiveDateTime,
+}
+
+impl Default for Message {
+    fn default() -> Self {
+        Self {
+            id: Uuid::nil(),
+            user_id: Default::default(),
+            group_id: Default::default(),
+            content: Default::default(),
+            r#type: Default::default(),
+            created_at: Default::default(),
+            edited_at: Default::default(),
+        }
+    }
 }
 
 #[derive(Debug, Insertable)]
@@ -76,5 +97,5 @@ pub struct NewMessage<'a> {
     pub content: Option<&'a str>,
     #[diesel(column_name = "type_")]
     pub r#type: Option<&'a MessageType>,
-    pub created_at: Option<&'a DateTime<Local>>
+    pub created_at: &'a NaiveDateTime,
 }

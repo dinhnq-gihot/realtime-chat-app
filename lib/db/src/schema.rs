@@ -42,7 +42,8 @@ diesel::table! {
         content -> Nullable<Text>,
         #[sql_name = "type"]
         type_ -> Nullable<MessageTypes>,
-        created_at -> Nullable<Timestamptz>,
+        created_at -> Timestamptz,
+        edited_at -> Timestamptz,
     }
 }
 
