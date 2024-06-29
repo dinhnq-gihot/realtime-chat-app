@@ -16,7 +16,7 @@ use {
     uuid::Uuid,
 };
 
-#[derive(Debug, Serialize, Deserialize, AsExpression, FromSqlRow)]
+#[derive(Debug, Serialize, Deserialize, AsExpression, FromSqlRow, PartialEq)]
 #[diesel(sql_type = MessageTypes)]
 pub enum MessageType {
     Text,
@@ -58,6 +58,18 @@ impl FromSql<MessageTypes, Pg> for MessageType {
     }
 }
 
+impl From<String> for MessageType {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "text" => Self::Text,
+            "file" => Self::File,
+            "image" => Self::Image,
+            "video" => Self::Video,
+            _ => Self::Text,
+        }
+    }
+}
+
 #[derive(Debug, Queryable, Identifiable, AsChangeset, Selectable, Associations)]
 #[diesel(table_name = crate::schema::messages)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -65,8 +77,8 @@ impl FromSql<MessageTypes, Pg> for MessageType {
 #[diesel(belongs_to(Group, foreign_key = group_id))]
 pub struct Message {
     pub id: Uuid,
-    pub user_id: Option<Uuid>,
-    pub group_id: Option<Uuid>,
+    pub user_id: Uuid,
+    pub group_id: Uuid,
     pub content: Option<String>,
     #[diesel(column_name = "type_")]
     pub r#type: Option<MessageType>,
@@ -92,8 +104,9 @@ impl Default for Message {
 #[diesel(table_name = crate::schema::messages)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewMessage<'a> {
-    pub user_id: Option<&'a Uuid>,
-    pub group_id: Option<&'a Uuid>,
+    pub id: &'a Uuid,
+    pub user_id: &'a Uuid,
+    pub group_id: &'a Uuid,
     pub content: Option<&'a str>,
     #[diesel(column_name = "type_")]
     pub r#type: Option<&'a MessageType>,

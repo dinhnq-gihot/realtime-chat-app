@@ -11,6 +11,8 @@ diesel::table! {
         message_id -> Uuid,
         #[max_length = 255]
         filename -> Varchar,
+        #[max_length = 255]
+        file_path -> Varchar,
     }
 }
 
@@ -37,8 +39,8 @@ diesel::table! {
 
     messages (id) {
         id -> Uuid,
-        user_id -> Nullable<Uuid>,
-        group_id -> Nullable<Uuid>,
+        user_id -> Uuid,
+        group_id -> Uuid,
         content -> Nullable<Text>,
         #[sql_name = "type"]
         type_ -> Nullable<MessageTypes>,
