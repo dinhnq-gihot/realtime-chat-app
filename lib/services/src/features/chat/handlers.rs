@@ -17,6 +17,8 @@ pub async fn send_message(
     payload: Json<SendChatRequest>,
     db: web::Data<Arc<Database>>,
 ) -> CustomResult<HttpResponse> {
+    chatapp_logger::debug!("{req:?}");
+
     let db = db.into_inner();
     let message_repo = Messages::new(Arc::clone(&db));
 
@@ -27,7 +29,7 @@ pub async fn send_message(
         message_type,
     } = payload.into_inner();
 
-    let new_message = message_repo
+    let _new_message = message_repo
         .create_message(Some(content), user_id, room_id, Some(message_type.into()))
         .await
         .map_err(MyError::InternalError);

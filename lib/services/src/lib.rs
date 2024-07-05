@@ -1,6 +1,6 @@
+mod errors;
 pub mod features;
 pub mod routes;
-mod errors;
 pub mod utils;
 pub use tracing;
 
